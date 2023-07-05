@@ -30,7 +30,35 @@ class Network(object):
         won't set any biases for those neurons, since biases are only
         ever used in computing the outputs from later layers."""
         self.num_layers = len(sizes)
+        """
+        sizes表示神经网络的层数，比如sizes=[1,2,3]表示三层神经网络，第一层有1个神经元，第二层有2个神经元，以此类推，
+            一般来说,第一层是输入层，最后一层是输出层，中间是隐藏层
+        """
         self.sizes = sizes
+        """
+        np.random.randn(n1,n2,n3,...):生成服从标准正态分布（均值为0，方差为1）的随机数，随机数的范围(负无穷, 正无穷)
+        在实际应用中，生成的随机数通常会在一定的范围内。标准正态分布的均值为0，方差为1。
+        因此，生成的随机数的平均值在接近0的位置，而大部分随机数的取值会在接近0附近，并随着离0的距离逐渐减少。
+        请注意，np.random.randn()生成的随机数是连续的实数值，而不是离散的值
+        
+        函数参数个数为0：生成一个浮点数，np.random.randn() = -0.5156079319849818
+        函数参数个数为1，数值为m：生成一个一维数组，有m个浮点元素, np.random.randn(1) = [ 0.37017203]
+        函数参数个数为m，数值为n1,n2,n3,...：生成一个m维数组，每一维的元素个数为n1,n2,n3,...
+                    np.random.randn(2,3) = [[ 0.40235067,0.11849399,0.46751975],[-0.2267899,0.5508104,-1.85147667]]
+        """
+
+        """
+        sizes[1:]：一个len(sizes)-1个的数组
+        biases是一个len(sizes)-1行1列的二维数组，表示每一层神经元的偏置集合
+            比如sizes=[1,2,3],表示神经网络有三层,则
+            y1 = np.random.randn(2, 1) = [[0.2394872834],[0.1298374289]]
+            y2 = np.random.randn(3, 1) = [[0.9385093535],[0.9848957834],[0.9823482472]]
+            biases=[y1,y2]，
+            第一层使用两个偏置biases[0] = y1,得到的两个输出作为第二层的输入，
+            第二层使用三个偏置biases[1] = y2,得到的三个输出作为这个神经网络的最终输出
+        因为最后一层不需要用到偏置，设第一层神经元个数为A1，第二层为A2，......，第n层为An，
+        偏置总数=A1+A2+A3+...+A（n-1）
+        """
         self.biases = [np.random.randn(y, 1) for y in sizes[1:]]
         self.weights = [np.random.randn(y, x)
                         for x, y in zip(sizes[:-1], sizes[1:])]
@@ -61,10 +89,10 @@ class Network(object):
             for mini_batch in mini_batches:
                 self.update_mini_batch(mini_batch, eta)
             if test_data:
-                print "Epoch {0}: {1} / {2}".format(
-                    j, self.evaluate(test_data), n_test)
+                print("Epoch {0}: {1} / {2}".format(
+                    j, self.evaluate(test_data), n_test))
             else:
-                print "Epoch {0} complete".format(j)
+                print("Epoch {0} complete".format(j))
 
     def update_mini_batch(self, mini_batch, eta):
         """Update the network's weights and biases by applying

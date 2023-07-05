@@ -5,6 +5,7 @@ import network
 import mnist_loader
 import pickle
 import gzip
+import numpy as np
 
 
 def open_pkl():
@@ -27,5 +28,18 @@ def train():
     net.SGD(training_data, 30, 10, 3.0, test_data=test_data)
 
 
+def randn():
+    """
+    生成0-1的正态分布
+    """
+    a1 = np.random.randn()
+    a2 = np.random.randn(1)
+    a3 = np.random.randn(2, 3)
+    print(a1)
+    print(a2)
+    print(a3)
+
+
 if __name__ == "__main__":
-    open_pkl()
+    # open_pkl()
+    randn()

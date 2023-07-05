@@ -1,3 +1,4 @@
+# coding=utf-8
 """
 network.py
 ~~~~~~~~~~
@@ -60,6 +61,29 @@ class Network(object):
         偏置总数=A1+A2+A3+...+A（n-1）
         """
         self.biases = [np.random.randn(y, 1) for y in sizes[1:]]
+
+        """
+        数组或list的负索引表示从其末尾开始算起，-1表示最后一个元素，[:-1]表示0到倒数第二个元素组成的数组或list
+        zip(*iterables)：Python内置的函数，它用于将多个可迭代对象的元素按索引进行配对，返回一个由元组组成的迭代器。
+            每个元组包含来自输入可迭代对象的对应位置的元素。iterables可以是列表、元组、字符串或其他可迭代类型.
+            return:返回一个list，元素是一个元组
+            基本用法：
+            a1 = [1, 2, 3]
+            a2 = ["a", "b", "c"]
+            zip_r = zip(a1, a2)
+            zip_r = [(1, 'a'), (2, 'b'), (3, 'c')]
+            当配对的可迭代对象的长度不一致时，zip()函数会以最短的可迭代对象为准，忽略长度超过最短对象的部分。
+            a1 = [1, 2,]
+            a2 = ["a", "b", "c"]
+            zip_r = zip(a1, a2)
+            zip_r = [(1, 'a'), (2, 'b')]
+        """
+        """
+        zip(sizes[:-1], sizes[1:])：将神经网络的相邻的两层各自的神经元个数进行两两配对
+        np.random.randn(y, x)：此处将y放在第一位是因为y是下一层的神经元个数，当前层需要执行y次损失函数后输出y个输出才能构成下一层
+        
+        所以此处的代码是为了初始化各层各个神经元所需要的权重值
+        """
         self.weights = [np.random.randn(y, x)
                         for x, y in zip(sizes[:-1], sizes[1:])]
 
@@ -79,16 +103,47 @@ class Network(object):
         network will be evaluated against the test data after each
         epoch, and partial progress printed out.  This is useful for
         tracking progress, but slows things down substantially."""
-        if test_data: n_test = len(test_data)
+        """
+        training_data：训练数据
+        epochs：训练轮数
+        mini_batch_size：批次数
+        eta：学习率
+        test_data：测试数据
+        """
+        if test_data:
+            n_test = len(test_data)
         n = len(training_data)
+        """
+        xrange() 函数用于生成一个指定范围内的整数迭代器,接受起始值、结束值和步长作为参数，并按照指定的步长生成整数序列
+                # 生成从0到9的整数序列 for i in xrange(10): print(i)
+                # 生成从5到19的奇数序列 for i in xrange(5, 20, 2): print(i)
+                注意：该函数只存在2.x版本，（Python 3.x）中已经将 xrange() 函数移除，并将其替换为 range() 函数
+        """
         for j in xrange(epochs):
+            """
+            random.shuffle() 是Python的一个随机模块（random module）中的函数，用于随机打乱（洗牌）可变序列对象的顺序
+            此处将training_data数组中的元素进行顺序打乱
+            """
             random.shuffle(training_data)
+            # 将训练数据切割成小批次
             mini_batches = [
                 training_data[k:k+mini_batch_size]
                 for k in xrange(0, n, mini_batch_size)]
             for mini_batch in mini_batches:
+                # 进行小批次训练，更新权重和偏置
                 self.update_mini_batch(mini_batch, eta)
             if test_data:
+                """
+                此处使用未被定义的n_test是被允许的，在python中控制块的块级作用域不存在，
+                对于像for,if,while,with等这样的控制块，在其中声明的变量作用域能够延伸到当前控制块之外。
+                但有一个问题，一旦该控制块的变量没被执行，在块外使用该变量时会报NameError错误
+                比如以下代码就会报错：
+                    if False:
+                        n_test = 1
+                    print(n_test)
+                
+                这里有对test_data进行判真，结合上下文，n_test是有被初始化的
+                """
                 print("Epoch {0}: {1} / {2}".format(
                     j, self.evaluate(test_data), n_test))
             else:

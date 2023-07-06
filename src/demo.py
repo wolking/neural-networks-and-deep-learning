@@ -76,8 +76,8 @@ if __name__ == "__main__":
     # open_pkl()
     # randn()
     # zip_example()
-    # train()
+    train()
     # np_zeros()
-    backprop_first_for()
+    # backprop_first_for()
 
 

@@ -193,7 +193,7 @@ class Network(object):
         nabla_w = [np.zeros(w.shape) for w in self.weights]
         for x, y in mini_batch:
             # x是像素集，y是结果集
-            # 反向传播
+            # 反向传播算法，用于快速计算代价函数的梯度
             delta_nabla_b, delta_nabla_w = self.backprop(x, y)
             nabla_b = [nb + dnb for nb, dnb in zip(nabla_b, delta_nabla_b)]
             nabla_w = [nw + dnw for nw, dnw in zip(nabla_w, delta_nabla_w)]
@@ -207,6 +207,7 @@ class Network(object):
         gradient for the cost function C_x.  ``nabla_b`` and
         ``nabla_w`` are layer-by-layer lists of numpy arrays, similar
         to ``self.biases`` and ``self.weights``."""
+
         nabla_b = [np.zeros(b.shape) for b in self.biases]
         nabla_w = [np.zeros(w.shape) for w in self.weights]
         # feedforward 前向传播：将输入样本通过神经网络进行前向传播，计算每一层的输出和激活值
@@ -214,6 +215,15 @@ class Network(object):
         activations = [x]  # list to store all the activations, layer by layer
         zs = []  # list to store all the z vectors, layer by layer
         for b, w in zip(self.biases, self.weights):
+            """
+            for循环解析：
+            我们假设该神经网络的有三层[3,2,1],那么weights应该为[[2行3列],[1行2列]]，biases为[[2行1列],[1行1列]]，将biases与weights进行配对
+            得到(3层-1)行1列的数组 [ ([2行1列],[2行3列]), ([1行1列],[1行2列]) ]，其中列为元组，该元组是zip配对后的结果
+            结构为 [(b1, w1), (b2, w2), ....]
+            进行for循环遍历，元组第一个为偏置b的矩阵，元组第二个为权重w的矩阵
+
+            更简明的示例请看：demo.backprop_first_for()
+            """
             """
             np.dot()：计算两个数组的点积（内积）,相当于数学里的矩阵相乘
                 a = np.array([[1, 2],[3, 4]])
@@ -225,18 +235,10 @@ class Network(object):
                 # [[19 22]
                 #  [43 50]]
             """
-            """
-            for循环解析：
-            我们假设该神经网络的有三层[3,2,1],那么weights应该为[[2行3列],[1行2列]]，biases为[[2行1列],[1行1列]]，将biases与weights进行配对
-            得到(3-1)行1列的数组 [ ([2行1列],[2行3列]), ([1行1列],[1行2列]) ]，其中列为元组，该元组是zip配对后的结果
-            结构为 [[b1, w1], [b2, w2], ....]
-            进行for循环遍历，元组第一个为偏置b的矩阵，元组第二个为权重w的矩阵
-            
-            更简明的示例请看：demo.backprop_first_for()
-            """
+            # z = w*a + b，a代表上一层的输出，当前层是第一层是，a表示训练数据，w/a/b都是矩阵
             z = np.dot(w, activation) + b
             zs.append(z)
-            # 计算下一个激活量，也就是下一层的输入，当前层的输出
+            # 计算下一个激活量，也就是下一层的输入，当前层的输出，这时候，activation是一个预测值
             activation = sigmoid(z)
             activations.append(activation)
         # backward pass

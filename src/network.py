@@ -17,6 +17,7 @@ import random
 # Third-party libraries
 import numpy as np
 
+
 class Network(object):
 
     def __init__(self, sizes):
@@ -57,8 +58,8 @@ class Network(object):
             biases=[y1,y2]，
             第一层使用两个偏置biases[0] = y1,得到的两个输出作为第二层的输入，
             第二层使用三个偏置biases[1] = y2,得到的三个输出作为这个神经网络的最终输出
-        因为最后一层不需要用到偏置，设第一层神经元个数为A1，第二层为A2，......，第n层为An，
-        偏置总数=A1+A2+A3+...+A（n-1）
+        因为最后一层不需要用到偏置，设第二层神经元个数为A1，第三层为A2，......，第n层为An，
+        偏置总数=A1+A2+A3+...+An
         """
         self.biases = [np.random.randn(y, 1) for y in sizes[1:]]
 
@@ -81,7 +82,7 @@ class Network(object):
         """
         zip(sizes[:-1], sizes[1:])：将神经网络的相邻的两层各自的神经元个数进行两两配对
         np.random.randn(y, x)：此处将y放在第一位是因为y是下一层的神经元个数，当前层需要执行y次损失函数后输出y个输出才能构成下一层
-        
+                                
         所以此处的代码是为了初始化各层各个神经元所需要的权重值
         """
         self.weights = [np.random.randn(y, x)
@@ -90,7 +91,7 @@ class Network(object):
     def feedforward(self, a):
         """Return the output of the network if ``a`` is input."""
         for b, w in zip(self.biases, self.weights):
-            a = sigmoid(np.dot(w, a)+b)
+            a = sigmoid(np.dot(w, a) + b)
         return a
 
     def SGD(self, training_data, epochs, mini_batch_size, eta,
@@ -104,6 +105,7 @@ class Network(object):
         epoch, and partial progress printed out.  This is useful for
         tracking progress, but slows things down substantially."""
         """
+        SGD：梯度下降算法
         training_data：训练数据
         epochs：训练轮数
         mini_batch_size：批次数
@@ -122,12 +124,27 @@ class Network(object):
         for j in xrange(epochs):
             """
             random.shuffle() 是Python的一个随机模块（random module）中的函数，用于随机打乱（洗牌）可变序列对象的顺序
-            此处将training_data数组中的元素进行顺序打乱
+            此处将training_data数组中的元素进行顺序打乱，打乱的原因如下：
+                在深度学习神经网络中，将训练数据随机打乱是一种常见的预处理步骤，其目的是提高训练的效果和泛化能力。以下是几个主要原因：
+
+                1.避免模型对顺序的依赖性：深度神经网络的训练通常使用基于梯度的优化算法，例如随机梯度下降（SGD）。
+                    在这些算法中，通过反向传播计算梯度，并根据梯度来更新网络参数。如果训练数据按照固定的顺序呈现给模型，
+                    模型可能会对顺序产生依赖，从而导致学习到的模型对于某些特定的顺序表现优秀，但在其他顺序下表现差。
+                    通过将训练数据随机打乱，可以破坏顺序的依赖性，使得模型不依赖于特定的数据顺序。
+                2.提高泛化能力：深度神经网络的目标是学习输入数据的潜在模式和特征，以便对未知数据进行准确的预测。
+                    如果训练数据按照固定的顺序呈现给模型，模型可能会对于特定的顺序学习到过度依赖的模式，导致模型泛化能力下降。
+                    通过随机打乱训练数据，可以引入更多的变化和多样性，使得模型能够更好地适应不同的数据分布和未知样本。
+                3.确保样本的独立性：如果训练数据集中的样本具有某种固定的排序或分布，例如按类别分组或按某种特征排序，
+                    那么在模型训练过程中，网络的不同层可能在不同时期接触到相似的样本。这可能会导致模型对某些样本的过拟合，
+                    而在处理不同类别或特征的样本时表现不佳。通过随机打乱数据，可以确保每个训练样本都有机会影响模型的训练过程，
+                    并减少过拟合的风险。
+
+                综上所述，将训练数据随机打乱有助于减少模型对顺序的依赖性，提高泛化能力，并确保每个样本对模型的训练都有平等的机会。这样可以促进模型学习到更广泛、更准确的特征和模式，从而改善模型的性能。
             """
             random.shuffle(training_data)
             # 将训练数据切割成小批次
             mini_batches = [
-                training_data[k:k+mini_batch_size]
+                training_data[k:k + mini_batch_size]
                 for k in xrange(0, n, mini_batch_size)]
             for mini_batch in mini_batches:
                 # 进行小批次训练，更新权重和偏置
@@ -150,19 +167,39 @@ class Network(object):
                 print("Epoch {0} complete".format(j))
 
     def update_mini_batch(self, mini_batch, eta):
-        """Update the network's weights and biases by applying
+        """小批量更新权重和偏置 Update the network's weights and biases by applying
         gradient descent using backpropagation to a single mini batch.
         The ``mini_batch`` is a list of tuples ``(x, y)``, and ``eta``
         is the learning rate."""
+
+        """
+        np.zeros()：用于创建指定形状和数据类型的全零数组，
+                    np.zeros(shape, dtype=float, order='C')
+                    参数解释：
+                        shape：数组的形状，可以是一个整数或一个整数元组，用于指定数组的维度。
+                        dtype（可选）：数据类型，表示创建的数组的元素类型，默认为 float。
+                        order（可选）：数组在内存中的布局顺序。默认为 'C'，表示按行展开（行优先）。
+                                    可选值有 'C' 和 'F'，分别表示行优先和列优先。
+                    arr = np.zeros((3, 4))
+                    print(arr)
+                    # 输出：
+                    # [[0. 0. 0. 0.]
+                    #  [0. 0. 0. 0.]
+                    #  [0. 0. 0. 0.]]
+        """
+        # 初始化一个与偏置数组结构相同的全零数组
         nabla_b = [np.zeros(b.shape) for b in self.biases]
+        # 初始化一个与权重数组结构相同的全零数组
         nabla_w = [np.zeros(w.shape) for w in self.weights]
         for x, y in mini_batch:
+            # x是像素集，y是结果集
+            # 反向传播
             delta_nabla_b, delta_nabla_w = self.backprop(x, y)
-            nabla_b = [nb+dnb for nb, dnb in zip(nabla_b, delta_nabla_b)]
-            nabla_w = [nw+dnw for nw, dnw in zip(nabla_w, delta_nabla_w)]
-        self.weights = [w-(eta/len(mini_batch))*nw
+            nabla_b = [nb + dnb for nb, dnb in zip(nabla_b, delta_nabla_b)]
+            nabla_w = [nw + dnw for nw, dnw in zip(nabla_w, delta_nabla_w)]
+        self.weights = [w - (eta / len(mini_batch)) * nw
                         for w, nw in zip(self.weights, nabla_w)]
-        self.biases = [b-(eta/len(mini_batch))*nb
+        self.biases = [b - (eta / len(mini_batch)) * nb
                        for b, nb in zip(self.biases, nabla_b)]
 
     def backprop(self, x, y):
@@ -172,18 +209,39 @@ class Network(object):
         to ``self.biases`` and ``self.weights``."""
         nabla_b = [np.zeros(b.shape) for b in self.biases]
         nabla_w = [np.zeros(w.shape) for w in self.weights]
-        # feedforward
+        # feedforward 前向传播：将输入样本通过神经网络进行前向传播，计算每一层的输出和激活值
         activation = x
-        activations = [x] # list to store all the activations, layer by layer
-        zs = [] # list to store all the z vectors, layer by layer
+        activations = [x]  # list to store all the activations, layer by layer
+        zs = []  # list to store all the z vectors, layer by layer
         for b, w in zip(self.biases, self.weights):
-            z = np.dot(w, activation)+b
+            """
+            np.dot()：计算两个数组的点积（内积）,相当于数学里的矩阵相乘
+                a = np.array([[1, 2],[3, 4]])
+                b = np.array([[5, 6],[7, 8]])
+
+                c = np.dot(a, b)
+                print(c)
+                # 输出：
+                # [[19 22]
+                #  [43 50]]
+            """
+            """
+            for循环解析：
+            我们假设该神经网络的有三层[3,2,1],那么weights应该为[[2行3列],[1行2列]]，biases为[[2行1列],[1行1列]]，将biases与weights进行配对
+            得到(3-1)行1列的数组 [ ([2行1列],[2行3列]), ([1行1列],[1行2列]) ]，其中列为元组，该元组是zip配对后的结果
+            结构为 [[b1, w1], [b2, w2], ....]
+            进行for循环遍历，元组第一个为偏置b的矩阵，元组第二个为权重w的矩阵
+            
+            更简明的示例请看：demo.backprop_first_for()
+            """
+            z = np.dot(w, activation) + b
             zs.append(z)
+            # 计算下一个激活量，也就是下一层的输入，当前层的输出
             activation = sigmoid(z)
             activations.append(activation)
         # backward pass
         delta = self.cost_derivative(activations[-1], y) * \
-            sigmoid_prime(zs[-1])
+                sigmoid_prime(zs[-1])
         nabla_b[-1] = delta
         nabla_w[-1] = np.dot(delta, activations[-2].transpose())
         # Note that the variable l in the loop below is used a little
@@ -195,9 +253,9 @@ class Network(object):
         for l in xrange(2, self.num_layers):
             z = zs[-l]
             sp = sigmoid_prime(z)
-            delta = np.dot(self.weights[-l+1].transpose(), delta) * sp
+            delta = np.dot(self.weights[-l + 1].transpose(), delta) * sp
             nabla_b[-l] = delta
-            nabla_w[-l] = np.dot(delta, activations[-l-1].transpose())
+            nabla_w[-l] = np.dot(delta, activations[-l - 1].transpose())
         return (nabla_b, nabla_w)
 
     def evaluate(self, test_data):
@@ -212,13 +270,15 @@ class Network(object):
     def cost_derivative(self, output_activations, y):
         """Return the vector of partial derivatives \partial C_x /
         \partial a for the output activations."""
-        return (output_activations-y)
+        return (output_activations - y)
+
 
 #### Miscellaneous functions
 def sigmoid(z):
     """The sigmoid function."""
-    return 1.0/(1.0+np.exp(-z))
+    return 1.0 / (1.0 + np.exp(-z))
+
 
 def sigmoid_prime(z):
     """Derivative of the sigmoid function."""
-    return sigmoid(z)*(1-sigmoid(z))
+    return sigmoid(z) * (1 - sigmoid(z))

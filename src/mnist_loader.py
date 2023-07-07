@@ -1,3 +1,4 @@
+# coding=utf-8
 """
 mnist_loader
 ~~~~~~~~~~~~
@@ -65,18 +66,35 @@ def load_data_wrapper():
     the training data and the validation / test data.  These formats
     turn out to be the most convenient for use in our neural network
     code."""
+
+    # tr_d: 是训练集，一个元组，第一个元素是5w个像素集，第二个元素是每一个像素集对应的数字
+    # va_d与te_d: 都是验证集，各1w个
     tr_d, va_d, te_d = load_data()
     """
-    
+    改变像素集的形状，由原来的二维数组[[784个像素点],5w个图像]，变为[[[1个像素点], 784个像素点集],5w个图像],记为TI_A
+    像素点从原来的数值变为只有一个元素的数组。
     """
     training_inputs = [np.reshape(x, (784, 1)) for x in tr_d[0]]
+    """
+    vectorized_result(j)：创建一个二维数组A，总共10个元素[[0], 10个]，每一个元素都是只有一个元素且为0的数组，
+                        在第j个元素时将0置为1.0，这里将数字转成一个二维数组且数字所在的元素为1，
+                        就是为了验证经过神经网络训练后的结果集，落在该位置的数值是否为1，或近似于1，与1的差越小，说明预测的结果越准确
+                        j为784个像素的图像代表的数字，范围在[0,9]之间
+    training_results：训练结果集，一个5w个元素的二维数组,记为TR_A，每一个元素都为A
+    """
     training_results = [vectorized_result(y) for y in tr_d[1]]
+    """
+    将变型的像素集TI_A与训练结果集TR_A进行配对，结果为：[([[1个像素点], 784个像素点集], [[0], 10个]), 5w个]
+    就是将784个像素点组成的图像和对应的数字组成一对元组
+    """
     training_data = zip(training_inputs, training_results)
+    # 下面的操作和training_data一样，对像素集变形，然后与结果集进行配对
     validation_inputs = [np.reshape(x, (784, 1)) for x in va_d[0]]
     validation_data = zip(validation_inputs, va_d[1])
     test_inputs = [np.reshape(x, (784, 1)) for x in te_d[0]]
     test_data = zip(test_inputs, te_d[1])
     return (training_data, validation_data, test_data)
+
 
 def vectorized_result(j):
     """Return a 10-dimensional unit vector with a 1.0 in the jth

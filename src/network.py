@@ -238,12 +238,12 @@ class Network(object):
             # z = w*a + b，a代表上一层的输出，当前层是第一层是，a表示训练数据，w/a/b都是矩阵
             z = np.dot(w, activation) + b
             zs.append(z)
-            # 计算下一个激活量，也就是下一层的输入，当前层的输出，这时候，activation是一个预测值
+            # 计算下一个激活量，也就是下一层的输入，当前层的输出
             activation = sigmoid(z)
+            # 一层一层存储激活值
             activations.append(activation)
         # backward pass
-        delta = self.cost_derivative(activations[-1], y) * \
-                sigmoid_prime(zs[-1])
+        delta = self.cost_derivative(activations[-1], y) * sigmoid_prime(zs[-1])
         nabla_b[-1] = delta
         nabla_w[-1] = np.dot(delta, activations[-2].transpose())
         # Note that the variable l in the loop below is used a little

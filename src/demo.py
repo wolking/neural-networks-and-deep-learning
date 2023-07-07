@@ -9,12 +9,6 @@ import numpy as np
 
 
 def open_pkl():
-    with gzip.open('../data/mnist.pkl.gz', 'rb') as file:
-        data = pickle.load(file)
-    print(data)
-
-
-def train():
     """
     加载训练数据文件[../data/mnist.pkl.gz]，返回三个ndarray对象，
     training_data是一个只有两个元素的元组
@@ -24,6 +18,12 @@ def train():
         training_data=tuple(array([[0.,0.,...,784个],....5w个]),
                             array())
     """
+    with gzip.open('../data/mnist.pkl.gz', 'rb') as file:
+        data = pickle.load(file)
+    print(data)
+
+
+def train():
     # 读取训练集
     training_data, validation_data, test_data = mnist_loader.load_data_wrapper()
     # 初始化神经网络

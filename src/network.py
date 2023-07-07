@@ -245,6 +245,10 @@ class Network(object):
         # backward pass
         delta = self.cost_derivative(activations[-1], y) * sigmoid_prime(zs[-1])
         nabla_b[-1] = delta
+        """
+        ndarray.transpose():交换数组的维度，也就是矩阵转置，行变列，列变行
+                            比如：array = [[1,2,3],[4,5,6]], array.transpose()就等于[[1,4],[2,5],[3,6]]
+        """
         nabla_w[-1] = np.dot(delta, activations[-2].transpose())
         # Note that the variable l in the loop below is used a little
         # differently to the notation in Chapter 2 of the book.  Here,
@@ -282,5 +286,5 @@ def sigmoid(z):
 
 
 def sigmoid_prime(z):
-    """Derivative of the sigmoid function."""
+    """对sigmoid函数的求偏导数，Derivative of the sigmoid function."""
     return sigmoid(z) * (1 - sigmoid(z))

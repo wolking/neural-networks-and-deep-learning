@@ -195,6 +195,7 @@ class Network(object):
             # x是像素集，y是结果集
             # 反向传播算法，用于快速计算代价函数的梯度
             delta_nabla_b, delta_nabla_w = self.backprop(x, y)
+            # 下批次的
             nabla_b = [nb + dnb for nb, dnb in zip(nabla_b, delta_nabla_b)]
             nabla_w = [nw + dnw for nw, dnw in zip(nabla_w, delta_nabla_w)]
         self.weights = [w - (eta / len(mini_batch)) * nw
@@ -269,6 +270,13 @@ class Network(object):
         network outputs the correct result. Note that the neural
         network's output is assumed to be the index of whichever
         neuron in the final layer has the highest activation."""
+        """
+        np.argmax()：用于返回数组中最大值的索引。
+                比如：a = ndarray(10, 30, 40, 20),则np.argmax(a)=4
+        通过feedforward函数以及经过梯度下降算法更新后的权重和偏置，可预测出图像x对应的数字，
+        feedforward()返回一个二维数组y，假设图像对应的数字为i，则y[i] = [1.0]，而其他元素均为[0.],通过argmax得到[1.0]的索引，
+        该索引是图像对应数字的预测值
+        """
         test_results = [(np.argmax(self.feedforward(x)), y)
                         for (x, y) in test_data]
         return sum(int(x == y) for (x, y) in test_results)

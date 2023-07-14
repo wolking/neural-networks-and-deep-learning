@@ -18,7 +18,7 @@ def open_pkl():
         training_data=tuple(array([[0.,0.,...,784个],....5w个]),
                             array())
     """
-    with gzip.open('../data/mnist.pkl.gz', 'rb') as file:
+    with gzip.open('../data/idx_ubyte/pkl/mnist.pkl.gz', 'rb') as file:
         data = pickle.load(file)
     print(data)
 
@@ -27,9 +27,9 @@ def train():
     # 读取训练集
     training_data, validation_data, test_data = mnist_loader.load_data_wrapper()
     # 初始化神经网络
-    net = network.Network([784, 30, 10])
+    net = network.Network([784, 50, 30, 10])
     # 开始训练，使用梯度下降算法
-    net.SGD(training_data, 1, 10, 3.0, test_data=test_data)
+    net.SGD(training_data, 5, 10, 3.0, test_data=test_data)
 
 
 def randn():

@@ -4,6 +4,8 @@
 import struct
 import numpy as np
 from PIL import Image
+from decimal import Decimal
+from sklearn.preprocessing import MinMaxScaler
 
 idx3_file_path = "../data/idx_ubyte/"
 
@@ -59,8 +61,10 @@ def read_all():
     读取所有手写数字集idx3文件
     """
     train_images = read_idx3_file(idx3_file_path + 'train-images.idx3-ubyte')
+    train_images = normalize_data(train_images[:100], (60000, 784))
     train_labels = read_idx1_file(idx3_file_path + 'train-labels.idx1-ubyte')
     test_images = read_idx3_file(idx3_file_path + 't10k-images.idx3-ubyte')
+    test_images = normalize_data(test_images, (10000, 784))
     test_labels = read_idx1_file(idx3_file_path + 't10k-labels.idx1-ubyte')
     return train_images, train_labels, test_images, test_labels
 
@@ -77,26 +81,39 @@ def save_images():
         image.save(image_path + 'train_{}.png'.format(i))
 
 
-def normalize_data():
+def normalize_data(train_images, shape):
     """
     将像素值进行归一化，归一化成[0,1]范围的二维数组，一维为图像个数，二维为归化后像素值
     """
-    train_images = read_idx3_file(idx3_file_path + 'train-images.idx3-ubyte')
-    images = np.zeros((60000, 784))
-    for x in train_images:
+    # train_images = read_idx3_file(idx3_file_path + 'train-images.idx3-ubyte')
+    images = np.zeros(shape)
+    for i in xrange(len(train_images)):
+        x = train_images[i]
+        scaler = MinMaxScaler(feature_range=(0, 1))
+        x = scaler.fit_transform(x.astype(float))
         x = x.reshape(784, order='C')
-        max_value = np.max(x)
-        min_value = np.min(x)
-        x = (x - min_value) / (max_value - min_value)
-        np.append(images, x)
-    print images
+        images[i] = x
+    return images
+
+
+def scale_demo():
+    """
+    归一化示例
+    """
+    scaler = MinMaxScaler(feature_range=(0, 1))
+    a = np.array([1, 2, 3])
+    na = scaler.fit_transform(a)
+    print na
 
 
 if __name__ == '__main__':
     # save_images()
-    normalize_data()
+    # normalize_data()
     # train_labels = read_idx1_file(idx3_file_path + 'train-labels.idx1-ubyte')
     # print(train_labels)
     # decode_idx3_ubyte(get_full_path('train-images.idx3-ubyte'))
     # decode_idx1_ubyte(get_full_path('train-labels.idx1-ubyte'))
+    # scale()
+    read_all()
+
 

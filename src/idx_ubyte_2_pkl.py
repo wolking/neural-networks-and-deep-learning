@@ -2,6 +2,9 @@
 # -*- coding:utf-8 -*-
 import gzip
 import pickle
+
+import numpy as np
+
 import idx3_ubyte_2_images as iu
 
 pkl_path = "../data/idx_ubyte/pkl/"
@@ -19,14 +22,15 @@ def save_pkl():
     读取idx_ubyte格式的mnist训练集，转为pkl格式
     """
     train_images, train_labels, test_images, test_labels = iu.read_all()
-    data = {
-        'train_images': train_images,
-        'train_labels': train_labels,
-        'test_images': test_images,
-        'test_labels': test_labels
-    }
+    validate_images = train_images[50000:]
+    validate_labels = train_labels[50000:]
+    data = ((train_images[:50000], np.array(train_labels[:50000])),
+            (validate_images, np.array(validate_labels)),
+            (test_images, np.array(test_labels)))
+
     with open(get_full_path('mnist.pkl'), 'wb') as f:
         pickle.dump(data, f)
+    print "done"
 
 
 def compress_pickle_file(input_file, output_file):
@@ -39,6 +43,6 @@ def compress_pickle_file(input_file, output_file):
 
 
 if __name__ == '__main__':
-    save_pkl()
+    # save_pkl()
     # 压缩pkl文件
-    # compress_pickle_file(get_full_path('mnist.pkl'), get_full_path('mnist.pkl.gz'))
+    compress_pickle_file(get_full_path('mnist.pkl'), get_full_path('mnist.pkl.gz'))
